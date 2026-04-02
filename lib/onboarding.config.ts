@@ -4,7 +4,7 @@
 export const onboardingConfig = {
   activeVariant: "A" as const,
   flaggedStepIndex: 7,
-  lastUpdated: "2026-04-02T19:29:11.102Z",
+  lastUpdated: "2026-04-02T19:38:35.771Z",
 } satisfies OnboardingConfig
 
 type OnboardingConfig = {
