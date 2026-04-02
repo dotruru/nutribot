@@ -1,117 +1,127 @@
 import React, { useState, useEffect } from 'react';
 
-export default function VariantC() {
-  const [metric, setMetric] = useState(true);
-  const [secondsLeft, setSecondsLeft] = useState(30);
-  const [showWhyAge, setShowWhyAge] = useState(false);
-  const [showWhyWeight, setShowWhyWeight] = useState(false);
+type Units = 'metric' | 'imperial';
 
-  // countdown timer
+export default function VariantC() {
+  const [height, setHeight] = useState('');
+  const [weight, setWeight] = useState('');
+  const [units, setUnits] = useState<Units>('metric');
+  const [secondsLeft, setSecondsLeft] = useState(30);
+
   useEffect(() => {
-    if (secondsLeft === 0) return;
-    const id = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
-    return () => clearTimeout(id);
-  }, [secondsLeft]);
+    const id = setInterval(() => {
+      setSecondsLeft((s) => {
+        if (s <= 1) {
+          clearInterval(id);
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const handleContinue = () => {
+    console.log({ height, weight, units });
+  };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col px-4 pt-10 pb-6">
-      {/* Timer */}
-      <div className="flex justify-center items-center mb-6">
-        <span className="text-sm font-medium text-gray-700">
-          {secondsLeft}s left
-        </span>
-        <div className="ml-2 w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-blue-500 transition-all duration-1000"
-            style={{ width: `${(secondsLeft / 30) * 100}%` }}
-          />
-        </div>
+    <div className="min-h-screen flex flex-col bg-white text-gray-900">
+      {/* Time Progress */}
+      <div className="h-2 w-full bg-gray-200 relative">
+        <div
+          className="h-full bg-emerald-500 transition-all duration-1000"
+          style={{ width: `${(secondsLeft / 30) * 100}%` }}
+        />
       </div>
 
-      {/* Value Statement */}
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">
-        Get your custom calorie plan
-      </h1>
-      <p className="text-gray-600 mb-8">
-        Just a few quick details so we can personalize your results.
-      </p>
+      <div className="flex-1 flex flex-col px-6 py-8">
+        {/* Headline */}
+        <h1 className="text-2xl font-bold mb-2">Last quick step</h1>
+        <p className="text-sm text-gray-600 mb-6">
+          Custom plan ready in <span className="font-semibold">{secondsLeft}s</span>
+        </p>
 
-      {/* Metric/Imperial Toggle */}
-      <div className="flex items-center justify-center mb-6 space-x-4">
-        <button
-          onClick={() => setMetric(true)}
-          className={`px-4 py-2 rounded-full text-sm font-medium ${
-            metric ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'
-          }`}
-        >
-          Metric
-        </button>
-        <button
-          onClick={() => setMetric(false)}
-          className={`px-4 py-2 rounded-full text-sm font-medium ${
-            !metric ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'
-          }`}
-        >
-          Imperial
-        </button>
-      </div>
-
-      {/* Form */}
-      <div className="space-y-6">
-        {/* Age */}
-        <div className="relative">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Age
-          </label>
+        {/* Height */}
+        <label className="mb-4 relative group">
+          <span className="block text-sm font-medium mb-1 flex items-center gap-1">
+            Height ({units === 'metric' ? 'cm' : 'ft/in'})
+            <span className="text-gray-400 cursor-help">?</span>
+          </span>
           <input
             type="number"
-            placeholder="e.g. 28"
-            className="w-full border border-gray-300 rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            inputMode="decimal"
+            placeholder={units === 'metric' ? '175' : '5.9'}
+            className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-emerald-500"
+            value={height}
+            onChange={(e) => setHeight(e.target.value)}
           />
-          {/* Why we ask */}
-          <button
-            onClick={() => setShowWhyAge((s) => !s)}
-            className="absolute right-3 top-9 text-gray-400 text-lg"
-            aria-label="Why we ask"
-          >
-            ?
-          </button>
-          {showWhyAge && (
-            <div className="absolute right-0 mt-2 w-48 p-3 bg-white border border-gray-200 shadow-lg rounded-lg text-xs text-gray-700 z-10">
-              Age helps us adjust your calorie needs accurately.
-            </div>
-          )}
-        </div>
+          {/* Tooltip */}
+          <span className="absolute top-full left-0 mt-1 hidden group-hover:block text-xs bg-gray-800 text-white p-2 rounded shadow">
+            We use your height to calculate BMI & calorie needs.
+          </span>
+        </label>
 
         {/* Weight */}
-        <div className="relative">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            {metric ? 'Weight (kg)' : 'Weight (lbs)'}
-          </label>
+        <label className="mb-6 relative group">
+          <span className="block text-sm font-medium mb-1 flex items-center gap-1">
+            Weight ({units === 'metric' ? 'kg' : 'lbs'})
+            <span className="text-gray-400 cursor-help">?</span>
+          </span>
           <input
             type="number"
-            placeholder={metric ? 'e.g. 70' : 'e.g. 155'}
-            className="w-full border border-gray-300 rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            inputMode="decimal"
+            placeholder={units === 'metric' ? '70' : '154'}
+            className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-emerald-500"
+            value={weight}
+            onChange={(e) => setWeight(e.target.value)}
           />
-          <button
-            onClick={() => setShowWhyWeight((s) => !s)}
-            className="absolute right-3 top-9 text-gray-400 text-lg"
-            aria-label="Why we ask"
-          >
-            ?
-          </button>
-          {showWhyWeight && (
-            <div className="absolute right-0 mt-2 w-48 p-3 bg-white border border-gray-200 shadow-lg rounded-lg text-xs text-gray-700 z-10">
-              Your weight is essential for calculating calorie expenditure.
-            </div>
-          )}
-        </div>
-      </div>
+          <span className="absolute top-full left-0 mt-1 hidden group-hover:block text-xs bg-gray-800 text-white p-2 rounded shadow">
+            Weight helps us tailor your daily macro targets.
+          </span>
+        </label>
 
-      {/* CTA */}
-      <button className="mt-10 py-4 bg-blue-600 text-white rounded-lg font-semibold active:scale-95 transition transform">
-        Get Started
-      </button>
+        {/* Units Toggle */}
+        <div className="flex items-center gap-2 mb-8">
+          <span className="text-sm">Units:</span>
+          <button
+            onClick={() => setUnits('metric')}
+            className={`px-3 py-1 border rounded-l-md ${
+              units === 'metric'
+                ? 'bg-emerald-500 text-white'
+                : 'bg-white text-gray-700'
+            }`}
+          >
+            Metric
+          </button>
+          <button
+            onClick={() => setUnits('imperial')}
+            className={`px-3 py-1 border rounded-r-md ${
+              units === 'imperial'
+                ? 'bg-emerald-500 text-white'
+                : 'bg-white text-gray-700'
+            }`}
+          >
+            Imperial
+          </button>
+        </div>
+
+        {/* CTA */}
+        <button
+          onClick={handleContinue}
+          className="mt-auto w-full bg-emerald-500 text-white py-4 rounded-lg font-semibold shadow hover:bg-emerald-600 transition-colors"
+        >
+          Continue
+        </button>
+
+        {/* Back */}
+        <button
+          className="mt-4 text-sm text-gray-500 underline"
+          onClick={() => window.history.back()}
+        >
+          ← Back
+        </button>
+      </div>
     </div>
   );
 }

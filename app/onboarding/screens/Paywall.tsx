@@ -1,66 +1,116 @@
 import React, { useState, useEffect } from 'react';
 
-export default function VariantA() {
-  const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
-  const [progress, setProgress] = useState(20); // starts at 20% (8-step flow placeholder)
+type Units = 'metric' | 'imperial';
 
-  // animate to 100% when goal chosen
+export default function VariantA() {
+  const [height, setHeight] = useState('');
+  const [weight, setWeight] = useState('');
+  const [units, setUnits] = useState<Units>('metric');
+  const [progress, setProgress] = useState(80); // last step of onboarding
+
   useEffect(() => {
-    if (selectedGoal) {
-      const timer = setTimeout(() => setProgress(100), 200);
-      return () => clearTimeout(timer);
-    }
-  }, [selectedGoal]);
+    const t = setTimeout(() => setProgress(100), 400); // animate bar
+    return () => clearTimeout(t);
+  }, []);
+
+  const handleContinue = () => {
+    // TODO: hook into funnel analytics + navigation
+    console.log({ height, weight, units });
+  };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col px-4 pt-10 pb-6">
-      {/* Progress Bar */}
-      <div className="w-full h-2 bg-gray-200 rounded-full mb-6">
+    <div className="min-h-screen flex flex-col bg-white text-gray-900">
+      {/* Progress */}
+      <div className="h-2 bg-gray-200 w-full">
         <div
-          className="h-full bg-green-500 rounded-full transition-all duration-500"
+          className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-700"
           style={{ width: `${progress}%` }}
         />
       </div>
 
-      {/* Aspirational Copy */}
-      <h1 className="text-2xl font-semibold text-gray-900 mb-2">
-        Imagine <span className="text-green-600">You</span> six months from now
-      </h1>
-      <p className="text-gray-600 mb-8">
-        Don’t let another month slip by. Start transforming your health today.
-      </p>
+      {/* Body */}
+      <div className="flex-1 flex flex-col px-6 py-10">
+        {/* Branding */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-extrabold leading-tight">
+            Meet the <span className="text-emerald-500">New You</span>
+          </h1>
+          <p className="text-sm text-gray-600 mt-1">
+            Finish this last detail—don’t let future-you look back with regret.
+          </p>
+        </div>
 
-      {/* Question */}
-      {!selectedGoal ? (
-        <>
-          <h2 className="text-lg font-medium text-gray-900 mb-4">
-            What’s your primary goal?
-          </h2>
-          <div className="flex flex-col space-y-3">
-            {['Lose Weight', 'Maintain Weight', 'Gain Muscle'].map((goal) => (
-              <button
-                key={goal}
-                onClick={() => setSelectedGoal(goal)}
-                className="w-full py-3 bg-gray-100 rounded-lg text-gray-800 font-medium active:scale-95 transition transform"
-              >
-                {goal}
-              </button>
-            ))}
-          </div>
-        </>
-      ) : (
-        /* Final CTA */
-        <div className="flex flex-col justify-between flex-1">
-          <div>
-            <p className="text-gray-700 mb-4">
-              Great choice! Your {selectedGoal.toLowerCase()} journey starts now.
-            </p>
-          </div>
-          <button className="mt-auto py-4 bg-green-600 text-white rounded-lg font-semibold active:scale-95 transition transform">
-            Get My Custom Plan
+        {/* Height */}
+        <label className="mb-5">
+          <span className="block text-sm font-medium mb-2">
+            Your height ({units === 'metric' ? 'cm' : 'ft / in'})
+          </span>
+          <input
+            type="number"
+            inputMode="decimal"
+            placeholder={units === 'metric' ? 'e.g. 175' : 'e.g. 5.9'}
+            className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            value={height}
+            onChange={(e) => setHeight(e.target.value)}
+          />
+        </label>
+
+        {/* Weight */}
+        <label className="mb-6">
+          <span className="block text-sm font-medium mb-2">
+            Your weight ({units === 'metric' ? 'kg' : 'lbs'})
+          </span>
+          <input
+            type="number"
+            inputMode="decimal"
+            placeholder={units === 'metric' ? 'e.g. 70' : 'e.g. 154'}
+            className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            value={weight}
+            onChange={(e) => setWeight(e.target.value)}
+          />
+        </label>
+
+        {/* Unit Toggle */}
+        <div className="flex items-center gap-2 mb-8">
+          <span className="text-sm">Units:</span>
+          <button
+            onClick={() => setUnits('metric')}
+            className={`px-3 py-1 border rounded-l-md ${
+              units === 'metric'
+                ? 'bg-emerald-500 text-white'
+                : 'bg-white text-gray-700'
+            }`}
+          >
+            Metric
+          </button>
+          <button
+            onClick={() => setUnits('imperial')}
+            className={`px-3 py-1 border rounded-r-md ${
+              units === 'imperial'
+                ? 'bg-emerald-500 text-white'
+                : 'bg-white text-gray-700'
+            }`}
+          >
+            Imperial
           </button>
         </div>
-      )}
+
+        {/* CTA */}
+        <button
+          onClick={handleContinue}
+          className="mt-auto w-full bg-emerald-500 text-white py-4 rounded-lg font-semibold shadow hover:bg-emerald-600 transition-colors"
+        >
+          Continue
+        </button>
+
+        {/* Back */}
+        <button
+          className="mt-4 text-sm text-gray-500 underline"
+          onClick={() => window.history.back()}
+        >
+          ← Back
+        </button>
+      </div>
     </div>
   );
 }
