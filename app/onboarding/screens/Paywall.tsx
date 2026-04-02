@@ -15,6 +15,7 @@ export interface PaywallProps {
 }
 
 export function Paywall({ onNext, onBack, data, setData }: PaywallProps) {
+  /* ---------------- STATE ---------------- */
   const [units, setUnits] = useState<Units>(data.units || "metric");
   const [height, setHeight] = useState<string>(
     data.height ? String(data.height) : ""
@@ -25,20 +26,21 @@ export function Paywall({ onNext, onBack, data, setData }: PaywallProps) {
   const [step, setStep] = useState<"height" | "weight">(
     height ? "weight" : "height"
   );
-  const [progress, setProgress] = useState(step === "height" ? 70 : 85);
+  const [progress, setProgress] = useState(step === "height" ? 80 : 95);
 
-  // animate bar on mount & when step changes
+  /* ------------ ANIMATE PROGRESS ---------- */
   useEffect(() => {
-    const target = step === "height" ? 80 : 100;
+    const target = step === "height" ? 90 : 100;
     const id = setTimeout(() => setProgress(target), 300);
     return () => clearTimeout(id);
   }, [step]);
 
-  // validation
+  /* ------------- VALIDATION --------------- */
   const canContinue =
     (step === "height" && !!Number(height)) ||
     (step === "weight" && !!Number(weight));
 
+  /* --------------- HANDLERS --------------- */
   const handleContinue = () => {
     if (step === "height") {
       setData({ height: Number(height), units });
@@ -49,27 +51,31 @@ export function Paywall({ onNext, onBack, data, setData }: PaywallProps) {
     }
   };
 
+  /* --------------- RENDER ----------------- */
   return (
     <div className="min-h-screen flex flex-col bg-white text-gray-900">
-      {/* animated progress */}
+      {/* PROGRESS BAR */}
       <div className="w-full h-2 bg-gray-200 overflow-hidden">
         <div
-          className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-700"
+          className="h-full bg-gradient-to-r from-rose-500 to-amber-400 transition-all duration-700"
           style={{ width: `${progress}%` }}
         />
       </div>
 
-      <main className="flex-1 px-6 pt-10 pb-6 flex flex-col">
-        {/* Emotional headline */}
+      {/* MAIN CONTENT */}
+      <main className="flex-1 px-6 pt-10 pb-8 flex flex-col">
+        {/* EMOTIONAL HEADER */}
         <header className="mb-10">
           <h1 className="text-3xl font-extrabold leading-tight">
-            Imagine <span className="text-emerald-500">Future-You</span>
+            See{" "}
+            <span className="text-rose-500">
+              Tomorrow’s You
+            </span>{" "}
+            Today
           </h1>
           <p className="text-sm text-gray-600 mt-2">
-            You’re one step away from the plan that turns{" "}
-            <span className="font-semibold">“I should”</span> into{" "}
-            <span className="font-semibold">“I did!”</span> Don’t lose the
-            progress you’ve already earned today.
+            You’ve already invested time—don’t leave future-you waiting. Lock in
+            your details and watch the difference unfold.
           </p>
         </header>
 
@@ -78,13 +84,13 @@ export function Paywall({ onNext, onBack, data, setData }: PaywallProps) {
           <div className="flex flex-col gap-6">
             <label>
               <span className="block text-sm font-medium mb-2">
-                My current height ({units === "metric" ? "cm" : "ft / in"})
+                Current height ({units === "metric" ? "cm" : "ft / in"})
               </span>
               <input
                 type="number"
                 inputMode="decimal"
                 placeholder={units === "metric" ? "e.g. 175" : "e.g. 5.9"}
-                className="w-full border border-gray-300 rounded-lg p-4 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full border border-gray-300 rounded-lg p-4 focus:outline-none focus:ring-2 focus:ring-rose-500"
                 value={height}
                 onChange={(e) => setHeight(e.target.value)}
               />
@@ -94,13 +100,13 @@ export function Paywall({ onNext, onBack, data, setData }: PaywallProps) {
           <div className="flex flex-col gap-6">
             <label>
               <span className="block text-sm font-medium mb-2">
-                My current weight ({units === "metric" ? "kg" : "lbs"})
+                Current weight ({units === "metric" ? "kg" : "lbs"})
               </span>
               <input
                 type="number"
                 inputMode="decimal"
                 placeholder={units === "metric" ? "e.g. 70" : "e.g. 154"}
-                className="w-full border border-gray-300 rounded-lg p-4 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full border border-gray-300 rounded-lg p-4 focus:outline-none focus:ring-2 focus:ring-rose-500"
                 value={weight}
                 onChange={(e) => setWeight(e.target.value)}
               />
@@ -108,13 +114,13 @@ export function Paywall({ onNext, onBack, data, setData }: PaywallProps) {
           </div>
         )}
 
-        {/* Units */}
+        {/* UNIT TOGGLE */}
         <div className="flex items-center gap-2 mt-6">
           <span className="text-sm">Units:</span>
           <button
             className={`px-3 py-1 border rounded-l-md ${
               units === "metric"
-                ? "bg-emerald-500 text-white"
+                ? "bg-rose-500 text-white"
                 : "bg-white text-gray-700"
             }`}
             onClick={() => setUnits("metric")}
@@ -124,7 +130,7 @@ export function Paywall({ onNext, onBack, data, setData }: PaywallProps) {
           <button
             className={`px-3 py-1 border rounded-r-md ${
               units === "imperial"
-                ? "bg-emerald-500 text-white"
+                ? "bg-rose-500 text-white"
                 : "bg-white text-gray-700"
             }`}
             onClick={() => setUnits("imperial")}
@@ -133,18 +139,18 @@ export function Paywall({ onNext, onBack, data, setData }: PaywallProps) {
           </button>
         </div>
 
-        {/* CTA */}
+        {/* CTA + BACK */}
         <div className="mt-auto">
           <button
             disabled={!canContinue}
             onClick={handleContinue}
             className={`w-full py-4 rounded-lg font-semibold shadow transition-colors ${
               canContinue
-                ? "bg-emerald-500 text-white hover:bg-emerald-600"
+                ? "bg-rose-500 text-white hover:bg-rose-600"
                 : "bg-gray-300 text-gray-500"
             }`}
           >
-            {step === "height" ? "Lock In Height →" : "See My Transformation"}
+            {step === "height" ? "Save My Height →" : "Reveal My Plan"}
           </button>
 
           <button

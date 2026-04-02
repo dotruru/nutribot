@@ -15,6 +15,7 @@ export interface PaywallProps {
 }
 
 export function Paywall({ onNext, onBack, data, setData }: PaywallProps) {
+  /* STATE */
   const [units, setUnits] = useState<Units>(data.units || "metric");
   const [height, setHeight] = useState<string>(
     data.height ? String(data.height) : ""
@@ -25,11 +26,14 @@ export function Paywall({ onNext, onBack, data, setData }: PaywallProps) {
   const [step, setStep] = useState<"height" | "weight">(
     height ? "weight" : "height"
   );
-  const [progress, setProgress] = useState(step === "height" ? 70 : 90);
+  const [progress, setProgress] = useState(step === "height" ? 75 : 95);
 
+  /* PROGRESS ANIMATION */
   useEffect(() => {
-    const target = step === "height" ? 80 : 100;
-    const id = setTimeout(() => setProgress(target), 300);
+    const id = setTimeout(
+      () => setProgress(step === "height" ? 85 : 100),
+      300
+    );
     return () => clearTimeout(id);
   }, [step]);
 
@@ -47,80 +51,74 @@ export function Paywall({ onNext, onBack, data, setData }: PaywallProps) {
     }
   };
 
+  /* RENDER */
   return (
     <div className="min-h-screen flex flex-col bg-white text-gray-900">
-      {/* progress line */}
-      <div className="w-full h-2 bg-gray-200">
+      {/* PROGRESS */}
+      <div className="w-full h-2 bg-gray-200 overflow-hidden">
         <div
           className="h-full bg-emerald-500 transition-all duration-700"
           style={{ width: `${progress}%` }}
         />
       </div>
 
-      <main className="flex-1 flex flex-col px-6 pt-8 pb-6">
-        {/* Social proof banner */}
-        <section className="mb-8 text-center">
-          <p className="text-xs uppercase tracking-widest text-emerald-600 font-semibold">
-            JOIN 10,000+ PEOPLE LIKE YOU
-          </p>
-          <h1 className="text-2xl font-extrabold mt-1">
-            Get a plan your community swears by 🚀
+      <main className="flex-1 px-6 pt-8 pb-6 flex flex-col">
+        {/* SOCIAL PROOF HEADLINE */}
+        <section className="mb-6">
+          <h1 className="text-2xl font-bold">
+            Join 10,000+ achievers transforming with NutriBot
           </h1>
-
-          {/* simple avatar row */}
-          <div className="flex justify-center -space-x-2 mt-4">
-            {["/avatar1.png", "/avatar2.png", "/avatar3.png", "/avatar4.png"].map(
-              (src, i) => (
-                <div
-                  key={i}
-                  className="w-9 h-9 rounded-full bg-gray-300 border-2 border-white"
-                />
-              )
-            )}
-            <span className="ml-3 text-sm text-gray-600">
-              +9,600 more
-            </span>
+          <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+            {/* Social media logos as simple emojis to avoid importing SVGs */}
+            <span>👍</span>
+            <span>🤝</span>
+            <span>💬</span>
+            <span>❤️</span>
           </div>
 
-          {/* testimonial */}
-          <blockquote className="mt-4 text-sm italic text-gray-500 max-w-xs mx-auto">
-            “NutriBot made healthy eating stick when nothing else worked.”
+          {/* Testimonial */}
+          <blockquote className="bg-gray-50 rounded-lg p-4 mt-4">
+            <p className="text-sm italic leading-snug">
+              “NutriBot helped me drop 12 lbs in 6 weeks! The community kept me
+              on track.”
+            </p>
+            <cite className="block mt-2 text-xs text-gray-600">— Alex T.</cite>
           </blockquote>
         </section>
 
-        {/* Question */}
+        {/* FORM QUESTION */}
         {step === "height" ? (
-          <label className="mb-6">
-            <span className="block text-sm font-medium mb-2">
+          <label className="flex flex-col gap-2">
+            <span className="text-sm font-medium">
               Your height ({units === "metric" ? "cm" : "ft / in"})
             </span>
             <input
+              className="w-full border border-gray-300 rounded-lg p-4 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              placeholder={units === "metric" ? "e.g. 170" : "e.g. 5.7"}
               type="number"
               inputMode="decimal"
-              placeholder={units === "metric" ? "e.g. 175" : "e.g. 5.9"}
-              className="w-full border border-gray-300 rounded-lg p-4 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               value={height}
               onChange={(e) => setHeight(e.target.value)}
             />
           </label>
         ) : (
-          <label className="mb-6">
-            <span className="block text-sm font-medium mb-2">
+          <label className="flex flex-col gap-2">
+            <span className="text-sm font-medium">
               Your weight ({units === "metric" ? "kg" : "lbs"})
             </span>
             <input
+              className="w-full border border-gray-300 rounded-lg p-4 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              placeholder={units === "metric" ? "e.g. 68" : "e.g. 150"}
               type="number"
               inputMode="decimal"
-              placeholder={units === "metric" ? "e.g. 70" : "e.g. 154"}
-              className="w-full border border-gray-300 rounded-lg p-4 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               value={weight}
               onChange={(e) => setWeight(e.target.value)}
             />
           </label>
         )}
 
-        {/* Units toggle */}
-        <div className="flex items-center gap-2 mb-10">
+        {/* UNIT SWITCH */}
+        <div className="flex items-center gap-2 mt-5">
           <span className="text-sm">Units:</span>
           <button
             className={`px-3 py-1 border rounded-l-md ${
@@ -155,11 +153,13 @@ export function Paywall({ onNext, onBack, data, setData }: PaywallProps) {
                 : "bg-gray-300 text-gray-500"
             }`}
           >
-            {step === "height" ? "Next →" : "Join the Community"}
+            {step === "height"
+              ? "Next — Weight"
+              : "Continue with the Community"}
           </button>
 
           <button
-            className="mt-4 text-sm text-gray-500 underline"
+            className="mt-3 text-sm text-gray-500 underline"
             onClick={step === "height" ? onBack : () => setStep("height")}
           >
             ← Back
