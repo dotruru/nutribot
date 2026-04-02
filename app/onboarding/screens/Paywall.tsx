@@ -1,166 +1,79 @@
 "use client"
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react"
+import { nutribotAnalytics } from "@/lib/posthog"
+import type { OnboardingData } from "@/lib/onboarding-types"
 
-type Units = "metric" | "imperial";
+type Props = { data: OnboardingData }
 
-export interface PaywallProps {
-  onNext: () => void;
-  onBack: () => void;
-  data: {
-    height?: number;
-    weight?: number;
-    units?: Units;
-  };
-  setData: (d: Partial<PaywallProps["data"]>) => void;
-}
+export function Paywall({ data }: Props) {
+  const [loading, setLoading] = useState(false)
+  const calories = data.dailyCalorieTarget
+  const goal = data.goal?.replace("_", " ") ?? "your goal"
 
-export function Paywall({ onNext, onBack, data, setData }: PaywallProps) {
-  /* ---------------- STATE ---------------- */
-  const [units, setUnits] = useState<Units>(data.units || "metric");
-  const [height, setHeight] = useState<string>(
-    data.height ? String(data.height) : ""
-  );
-  const [weight, setWeight] = useState<string>(
-    data.weight ? String(data.weight) : ""
-  );
-  const [step, setStep] = useState<"height" | "weight">(
-    height ? "weight" : "height"
-  );
-  const [progress, setProgress] = useState(step === "height" ? 80 : 95);
+  const handleStart = () => {
+    setLoading(true)
+    nutribotAnalytics.startedFreeTrial()
+    setTimeout(() => {
+      nutribotAnalytics.completedOnboarding()
+      window.location.href = "/dashboard"
+    }, 800)
+  }
 
-  /* ------------ ANIMATE PROGRESS ---------- */
-  useEffect(() => {
-    const target = step === "height" ? 90 : 100;
-    const id = setTimeout(() => setProgress(target), 300);
-    return () => clearTimeout(id);
-  }, [step]);
+  const handleSkip = () => {
+    nutribotAnalytics.skippedPaywall()
+    nutribotAnalytics.completedOnboarding()
+    window.location.href = "/dashboard"
+  }
 
-  /* ------------- VALIDATION --------------- */
-  const canContinue =
-    (step === "height" && !!Number(height)) ||
-    (step === "weight" && !!Number(weight));
-
-  /* --------------- HANDLERS --------------- */
-  const handleContinue = () => {
-    if (step === "height") {
-      setData({ height: Number(height), units });
-      setStep("weight");
-    } else {
-      setData({ weight: Number(weight), units });
-      onNext();
-    }
-  };
-
-  /* --------------- RENDER ----------------- */
   return (
-    <div className="min-h-screen flex flex-col bg-white text-gray-900">
-      {/* PROGRESS BAR */}
-      <div className="w-full h-2 bg-gray-200 overflow-hidden">
-        <div
-          className="h-full bg-gradient-to-r from-rose-500 to-amber-400 transition-all duration-700"
-          style={{ width: `${progress}%` }}
-        />
+    <div className="min-h-screen flex flex-col bg-white">
+      <div className="w-full h-1.5 bg-gray-100">
+        <div className="h-full bg-black transition-all duration-700" style={{ width: "100%" }} />
       </div>
 
-      {/* MAIN CONTENT */}
-      <main className="flex-1 px-6 pt-10 pb-8 flex flex-col">
-        {/* EMOTIONAL HEADER */}
-        <header className="mb-10">
-          <h1 className="text-3xl font-extrabold leading-tight">
-            See{" "}
-            <span className="text-rose-500">
-              Tomorrow’s You
-            </span>{" "}
-            Today
-          </h1>
-          <p className="text-sm text-gray-600 mt-2">
-            You’ve already invested time—don’t leave future-you waiting. Lock in
-            your details and watch the difference unfold.
-          </p>
-        </header>
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-10 text-center">
+        <div className="mb-3 text-4xl">🎯</div>
+        <h1 className="text-3xl font-bold text-gray-900 tracking-tight leading-tight mb-3">
+          Your plan is ready.
+        </h1>
+        <p className="text-gray-500 text-base mb-8 max-w-xs">
+          Based on your profile, NutriBot will help you{" "}
+          <span className="font-semibold text-gray-800">{goal}</span>
+          {calories ? ` — targeting ${calories} kcal/day` : ""}.
+        </p>
 
-        {/* QUESTION */}
-        {step === "height" ? (
-          <div className="flex flex-col gap-6">
-            <label>
-              <span className="block text-sm font-medium mb-2">
-                Current height ({units === "metric" ? "cm" : "ft / in"})
-              </span>
-              <input
-                type="number"
-                inputMode="decimal"
-                placeholder={units === "metric" ? "e.g. 175" : "e.g. 5.9"}
-                className="w-full border border-gray-300 rounded-lg p-4 focus:outline-none focus:ring-2 focus:ring-rose-500"
-                value={height}
-                onChange={(e) => setHeight(e.target.value)}
-              />
-            </label>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-6">
-            <label>
-              <span className="block text-sm font-medium mb-2">
-                Current weight ({units === "metric" ? "kg" : "lbs"})
-              </span>
-              <input
-                type="number"
-                inputMode="decimal"
-                placeholder={units === "metric" ? "e.g. 70" : "e.g. 154"}
-                className="w-full border border-gray-300 rounded-lg p-4 focus:outline-none focus:ring-2 focus:ring-rose-500"
-                value={weight}
-                onChange={(e) => setWeight(e.target.value)}
-              />
-            </label>
-          </div>
-        )}
+        <ul className="w-full max-w-xs text-left space-y-3 mb-10">
+          {[
+            "AI-personalised daily calorie targets",
+            "Weekly progress tracking and insights",
+            "Flexible meal logging — no strict rules",
+            "Adjust goals anytime as life changes",
+          ].map((item) => (
+            <li key={item} className="flex items-start gap-2 text-sm text-gray-700">
+              <span className="text-green-500 font-bold mt-0.5">✓</span>
+              {item}
+            </li>
+          ))}
+        </ul>
 
-        {/* UNIT TOGGLE */}
-        <div className="flex items-center gap-2 mt-6">
-          <span className="text-sm">Units:</span>
-          <button
-            className={`px-3 py-1 border rounded-l-md ${
-              units === "metric"
-                ? "bg-rose-500 text-white"
-                : "bg-white text-gray-700"
-            }`}
-            onClick={() => setUnits("metric")}
-          >
-            Metric
-          </button>
-          <button
-            className={`px-3 py-1 border rounded-r-md ${
-              units === "imperial"
-                ? "bg-rose-500 text-white"
-                : "bg-white text-gray-700"
-            }`}
-            onClick={() => setUnits("imperial")}
-          >
-            Imperial
-          </button>
-        </div>
+        <p className="text-xs text-gray-400 mb-6">
+          Join 12,000+ people already hitting their targets with NutriBot
+        </p>
 
-        {/* CTA + BACK */}
-        <div className="mt-auto">
-          <button
-            disabled={!canContinue}
-            onClick={handleContinue}
-            className={`w-full py-4 rounded-lg font-semibold shadow transition-colors ${
-              canContinue
-                ? "bg-rose-500 text-white hover:bg-rose-600"
-                : "bg-gray-300 text-gray-500"
-            }`}
-          >
-            {step === "height" ? "Save My Height →" : "Reveal My Plan"}
-          </button>
+        <button
+          onClick={handleStart}
+          disabled={loading}
+          className="w-full max-w-xs bg-black text-white font-semibold py-4 rounded-2xl text-base mb-3 disabled:opacity-60 transition-opacity"
+        >
+          {loading ? "Setting up your dashboard..." : "Start Free Trial - 7 days free"}
+        </button>
 
-          <button
-            className="mt-4 text-sm text-gray-500 underline"
-            onClick={step === "height" ? onBack : () => setStep("height")}
-          >
-            ← Back
-          </button>
-        </div>
-      </main>
+        <button onClick={handleSkip} className="text-xs text-gray-400 underline">
+          Skip for now
+        </button>
+
+        <p className="mt-4 text-xs text-gray-300">Then $9.99/month. Cancel anytime.</p>
+      </div>
     </div>
-  );
+  )
 }
