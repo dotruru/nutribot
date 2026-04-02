@@ -15,7 +15,6 @@ export interface PaywallProps {
 }
 
 export function Paywall({ onNext, onBack, data, setData }: PaywallProps) {
-  const [progress, setProgress] = useState(80); // overall onboarding prog.
   const [units, setUnits] = useState<Units>(data.units || "metric");
   const [height, setHeight] = useState<string>(
     data.height ? String(data.height) : ""
@@ -23,20 +22,22 @@ export function Paywall({ onNext, onBack, data, setData }: PaywallProps) {
   const [weight, setWeight] = useState<string>(
     data.weight ? String(data.weight) : ""
   );
-
   const [step, setStep] = useState<"height" | "weight">(
     height ? "weight" : "height"
   );
+  const [progress, setProgress] = useState(step === "height" ? 70 : 85);
 
-  // animate global progress bar
+  // animate bar on mount & when step changes
   useEffect(() => {
-    const id = setTimeout(() => setProgress(100), 400);
+    const target = step === "height" ? 80 : 100;
+    const id = setTimeout(() => setProgress(target), 300);
     return () => clearTimeout(id);
-  }, []);
+  }, [step]);
 
-  // simple validation
+  // validation
   const canContinue =
-    (step === "height" && !!height) || (step === "weight" && !!weight);
+    (step === "height" && !!Number(height)) ||
+    (step === "weight" && !!Number(weight));
 
   const handleContinue = () => {
     if (step === "height") {
@@ -50,35 +51,34 @@ export function Paywall({ onNext, onBack, data, setData }: PaywallProps) {
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-gray-900">
-      {/* progress bar */}
-      <div className="w-full h-2 bg-gray-200">
+      {/* animated progress */}
+      <div className="w-full h-2 bg-gray-200 overflow-hidden">
         <div
           className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-700"
           style={{ width: `${progress}%` }}
         />
       </div>
 
-      {/* header / copy */}
-      <div className="flex-1 flex flex-col px-6 py-10">
+      <main className="flex-1 px-6 pt-10 pb-6 flex flex-col">
+        {/* Emotional headline */}
         <header className="mb-10">
           <h1 className="text-3xl font-extrabold leading-tight">
-            The
-            <span className="text-emerald-500"> New-You</span> journey
+            Imagine <span className="text-emerald-500">Future-You</span>
           </h1>
           <p className="text-sm text-gray-600 mt-2">
-            Just one more{" "}
-            <span className="font-medium text-gray-800">personal detail</span>{" "}
-            before future-you thanks you. Don’t miss out on the progress you’ve
-            earned.
+            You’re one step away from the plan that turns{" "}
+            <span className="font-semibold">“I should”</span> into{" "}
+            <span className="font-semibold">“I did!”</span> Don’t lose the
+            progress you’ve already earned today.
           </p>
         </header>
 
-        {/* ONE QUESTION PER SCREEN */}
+        {/* QUESTION */}
         {step === "height" ? (
-          <>
-            <label className="mb-6 w-full">
+          <div className="flex flex-col gap-6">
+            <label>
               <span className="block text-sm font-medium mb-2">
-                Your height ({units === "metric" ? "cm" : "ft / in"})
+                My current height ({units === "metric" ? "cm" : "ft / in"})
               </span>
               <input
                 type="number"
@@ -89,12 +89,12 @@ export function Paywall({ onNext, onBack, data, setData }: PaywallProps) {
                 onChange={(e) => setHeight(e.target.value)}
               />
             </label>
-          </>
+          </div>
         ) : (
-          <>
-            <label className="mb-6 w-full">
+          <div className="flex flex-col gap-6">
+            <label>
               <span className="block text-sm font-medium mb-2">
-                Your weight ({units === "metric" ? "kg" : "lbs"})
+                My current weight ({units === "metric" ? "kg" : "lbs"})
               </span>
               <input
                 type="number"
@@ -105,11 +105,11 @@ export function Paywall({ onNext, onBack, data, setData }: PaywallProps) {
                 onChange={(e) => setWeight(e.target.value)}
               />
             </label>
-          </>
+          </div>
         )}
 
-        {/* Units toggle */}
-        <div className="flex items-center gap-2 mb-10">
+        {/* Units */}
+        <div className="flex items-center gap-2 mt-6">
           <span className="text-sm">Units:</span>
           <button
             className={`px-3 py-1 border rounded-l-md ${
@@ -134,26 +134,27 @@ export function Paywall({ onNext, onBack, data, setData }: PaywallProps) {
         </div>
 
         {/* CTA */}
-        <button
-          disabled={!canContinue}
-          onClick={handleContinue}
-          className={`w-full py-4 rounded-lg font-semibold shadow transition-colors ${
-            canContinue
-              ? "bg-emerald-500 text-white hover:bg-emerald-600"
-              : "bg-gray-300 text-gray-500"
-          }`}
-        >
-          {step === "height" ? "Next: Weight" : "See My Plan"}
-        </button>
+        <div className="mt-auto">
+          <button
+            disabled={!canContinue}
+            onClick={handleContinue}
+            className={`w-full py-4 rounded-lg font-semibold shadow transition-colors ${
+              canContinue
+                ? "bg-emerald-500 text-white hover:bg-emerald-600"
+                : "bg-gray-300 text-gray-500"
+            }`}
+          >
+            {step === "height" ? "Lock In Height →" : "See My Transformation"}
+          </button>
 
-        {/* Back */}
-        <button
-          className="mt-4 text-sm text-gray-500 underline self-start"
-          onClick={step === "height" ? onBack : () => setStep("height")}
-        >
-          ← Back
-        </button>
-      </div>
+          <button
+            className="mt-4 text-sm text-gray-500 underline"
+            onClick={step === "height" ? onBack : () => setStep("height")}
+          >
+            ← Back
+          </button>
+        </div>
+      </main>
     </div>
   );
 }

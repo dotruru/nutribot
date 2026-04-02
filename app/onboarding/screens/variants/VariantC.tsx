@@ -22,98 +22,90 @@ export function Paywall({ onNext, onBack, data, setData }: PaywallProps) {
   const [weight, setWeight] = useState<string>(
     data.weight ? String(data.weight) : ""
   );
-  const [secondsLeft, setSecondsLeft] = useState(30);
+  const [timer, setTimer] = useState<number>(30); // seconds left
 
+  // countdown timer
   useEffect(() => {
-    const id = setInterval(() => {
-      setSecondsLeft((s) => (s > 0 ? s - 1 : 0));
-    }, 1000);
-    return () => clearInterval(id);
-  }, []);
+    if (timer <= 0) return;
+    const id = setTimeout(() => setTimer((t) => t - 1), 1000);
+    return () => clearTimeout(id);
+  }, [timer]);
 
-  const canContinue = !!height && !!weight;
+  const canContinue = !!Number(height) && !!Number(weight);
 
-  const handleNext = () => {
-    setData({ height: Number(height), weight: Number(weight), units });
+  const handleContinue = () => {
+    setData({
+      height: Number(height),
+      weight: Number(weight),
+      units,
+    });
     onNext();
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-gray-900">
-      {/* countdown */}
-      <div className="w-full text-center py-2 bg-gray-100 text-xs text-gray-600">
-        {secondsLeft} seconds left to get your personalized plan
+      {/* slim time progress bar */}
+      <div className="w-full h-1 bg-gray-200">
+        <div
+          className="h-full bg-emerald-500 transition-all linear"
+          style={{ width: `${(30 - timer) * (100 / 30)}%` }}
+        />
       </div>
 
-      <div className="flex-1 flex flex-col px-6 py-8">
-        <h1 className="text-xl font-semibold mb-6">
-          Quick setup — less than 1 minute
-        </h1>
+      <main className="flex-1 flex flex-col px-6 pt-10 pb-6">
+        {/* Speed headline */}
+        <header className="mb-8">
+          <h1 className="text-2xl font-bold">
+            Just 30&nbsp;seconds to your tailored plan
+          </h1>
+          <p className="text-sm text-gray-600 mt-1">
+            Answer these two quick questions and see your results instantly.
+          </p>
+        </header>
 
-        {/* HEIGHT */}
-        <div className="mb-5">
-          <div className="flex items-center justify-between mb-2">
-            <label className="text-sm font-medium">
+        {/* inputs */}
+        <div className="flex flex-col gap-6">
+          {/* Height */}
+          <div className="relative">
+            <label className="block text-sm font-medium mb-2">
               Height ({units === "metric" ? "cm" : "ft / in"})
-            </label>
-            {/* tooltip */}
-            <span className="group relative cursor-pointer">
-              <svg
-                className="w-4 h-4 text-gray-400"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path d="M9 2a7 7 0 100 14A7 7 0 009 2zM8 9h2v5H8V9zm0-3h2v2H8V6z" />
-              </svg>
-              <span className="opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity absolute right-0 top-6 w-40 bg-gray-800 text-white text-xs rounded-md px-2 py-1 z-10">
-                We tailor calorie targets based on your height.
+              <span className="ml-1 text-gray-400 cursor-pointer" title="We use your height to calculate BMI and caloric needs.">
+                ⓘ
               </span>
-            </span>
+            </label>
+            <input
+              type="number"
+              inputMode="decimal"
+              placeholder={units === "metric" ? "e.g. 175" : "e.g. 5.9"}
+              className="w-full border border-gray-300 rounded-lg p-4 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              value={height}
+              onChange={(e) => setHeight(e.target.value)}
+            />
           </div>
-          <input
-            type="number"
-            inputMode="decimal"
-            placeholder={units === "metric" ? "175" : "5.9"}
-            className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            value={height}
-            onChange={(e) => setHeight(e.target.value)}
-          />
-        </div>
 
-        {/* WEIGHT */}
-        <div className="mb-5">
-          <div className="flex items-center justify-between mb-2">
-            <label className="text-sm font-medium">
+          {/* Weight */}
+          <div className="relative">
+            <label className="block text-sm font-medium mb-2">
               Weight ({units === "metric" ? "kg" : "lbs"})
-            </label>
-            <span className="group relative cursor-pointer">
-              <svg
-                className="w-4 h-4 text-gray-400"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path d="M9 2a7 7 0 100 14A7 7 0 009 2zM8 9h2v5H8V9zm0-3h2v2H8V6z" />
-              </svg>
-              <span className="opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity absolute right-0 top-6 w-40 bg-gray-800 text-white text-xs rounded-md px-2 py-1 z-10">
-                Needed to calculate your daily calorie goal.
+              <span className="ml-1 text-gray-400 cursor-pointer" title="Knowing your weight lets us personalise calorie targets for maximum results.">
+                ⓘ
               </span>
-            </span>
+            </label>
+            <input
+              type="number"
+              inputMode="decimal"
+              placeholder={units === "metric" ? "e.g. 70" : "e.g. 154"}
+              className="w-full border border-gray-300 rounded-lg p-4 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              value={weight}
+              onChange={(e) => setWeight(e.target.value)}
+            />
           </div>
-          <input
-            type="number"
-            inputMode="decimal"
-            placeholder={units === "metric" ? "70" : "154"}
-            className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            value={weight}
-            onChange={(e) => setWeight(e.target.value)}
-          />
         </div>
 
         {/* Units toggle */}
-        <div className="flex items-center gap-2 mb-10">
+        <div className="flex items-center gap-2 my-8">
           <span className="text-sm">Units:</span>
           <button
-            type="button"
             className={`px-3 py-1 border rounded-l-md ${
               units === "metric"
                 ? "bg-emerald-500 text-white"
@@ -124,7 +116,6 @@ export function Paywall({ onNext, onBack, data, setData }: PaywallProps) {
             Metric
           </button>
           <button
-            type="button"
             className={`px-3 py-1 border rounded-r-md ${
               units === "imperial"
                 ? "bg-emerald-500 text-white"
@@ -136,27 +127,32 @@ export function Paywall({ onNext, onBack, data, setData }: PaywallProps) {
           </button>
         </div>
 
-        {/* CTA */}
-        <button
-          disabled={!canContinue}
-          onClick={handleNext}
-          className={`w-full py-4 rounded-lg font-semibold shadow transition-colors ${
-            canContinue
-              ? "bg-emerald-500 text-white hover:bg-emerald-600"
-              : "bg-gray-300 text-gray-500"
-          }`}
-        >
-          Continue
-        </button>
+        {/* CTA + timer */}
+        <div className="mt-auto">
+          <button
+            disabled={!canContinue}
+            onClick={handleContinue}
+            className={`w-full py-4 rounded-lg font-semibold shadow transition-colors ${
+              canContinue
+                ? "bg-emerald-500 text-white hover:bg-emerald-600"
+                : "bg-gray-300 text-gray-500"
+            }`}
+          >
+            See My Plan
+          </button>
 
-        {/* Back */}
-        <button
-          className="mt-4 text-sm text-gray-500 underline self-start"
-          onClick={onBack}
-        >
-          ← Back
-        </button>
-      </div>
+          <p className="mt-3 text-center text-xs text-gray-500">
+            {timer > 0 ? `${timer}s left` : "Time’s up — hurry!"}
+          </p>
+
+          <button
+            className="mt-4 text-sm text-gray-500 underline"
+            onClick={onBack}
+          >
+            ← Back
+          </button>
+        </div>
+      </main>
     </div>
   );
 }
